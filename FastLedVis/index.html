@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastLedVis — Arduino FastLED Sketch Scanner &amp; Hardware Visualizer</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-screen bg-[#090d16] text-slate-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+  <!-- Top Header & Global Toolbar -->
+  <header class="border-b border-slate-800/90 bg-slate-950/90 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+      <!-- Brand + Repo Badge + Live Verification Pill -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 via-emerald-400 to-fuchsia-500 p-[1.5px] shadow-lg shadow-cyan-500/10">
+            <div class="w-full h-full bg-slate-950 rounded-[7px] flex items-center justify-center">
+              <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M19.07 4.93l-2.12 2.12M7.05 16.95l-2.12 2.12"></path>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-sm sm:text-base font-bold tracking-tight text-white">FastLedVis</h1>
+              <span class="hidden md:inline-block px-2 py-0.5 text-[10px] rounded bg-slate-800/90 text-slate-300 border border-slate-700 code-font">Spaceulizer/FastLedVis</span>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Zero-Wiring Arduino FastLED Hardware Scanner &amp; Optical Simulator</p>
+          </div>
+        </div>
+
+        <div id="validationBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/90 border border-emerald-500/50 text-emerald-300">
+          <span id="validationDot" class="w-2 h-2 rounded-full bg-emerald-400 led-status-dot"></span>
+          <span id="validationText">FASTLED VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- Preset Selector & Primary Actions -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <label for="presetSelect" class="text-xs text-slate-400 hidden xl:inline">Example Sketch:</label>
+        <select id="presetSelect" aria-label="Select FastLED Example Sketch" class="bg-slate-900 border border-slate-700/90 hover:border-slate-600 text-slate-100 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-cyan-500 max-w-[230px] sm:max-w-[280px]">
+        </select>
+
+        <button id="scanRunBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md shadow-cyan-500/15 transition">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Scan &amp; Run</span>
+        </button>
+
+        <input id="sketchFileInput" type="file" accept=".ino,.cpp,.c,.h,.txt" class="hidden" />
+        <button id="uploadBtn" type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/90 transition" title="Upload an Arduino .ino or .cpp file">
+          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Load .ino</span>
+        </button>
+
+        <button id="downloadInoBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/90 transition" title="Download current sketch as .ino">
+          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span class="hidden sm:inline">Save .ino</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Split Workbench Layout -->
+  <main class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+    <!-- Left Column: Arduino FastLED Sketch Editor & Scanned Hardware Specifications (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-3">
+      <!-- Code Editor Card -->
+      <div class="rounded-xl bg-slate-900/75 border border-slate-800/90 flex flex-col overflow-hidden shadow-lg">
+        <div class="px-3 py-2 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <span class="text-xs font-semibold text-slate-200 truncate">Arduino Sketch (<code class="code-font text-cyan-300">.ino</code>)</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="editorLineCount" class="text-[11px] text-slate-400 code-font">0 lines</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/70 hidden sm:inline">Ctrl+Enter to Run</span>
+          </div>
+        </div>
+
+        <div id="presetDescText" class="px-3 py-1.5 bg-slate-950/70 border-b border-slate-800/80 text-[11px] text-slate-400 truncate">
+          Loading FastLED sketch...
+        </div>
+
+        <!-- Rejection / Compile Diagnostic Banner -->
+        <div id="rejectionBanner" class="hidden px-3.5 py-2.5 bg-red-950/85 border-b border-red-500/50 text-xs text-red-200">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div id="rejectionTitle" class="font-bold text-red-300">Sketch Rejected: FastLED Library Required</div>
+              <p id="rejectionDetail" class="text-[11px] text-red-200/90 mt-0.5 leading-relaxed"></p>
+            </div>
+            <button id="loadValidPresetBtn" type="button" class="shrink-0 px-2.5 py-1 rounded bg-red-800/80 hover:bg-red-700 text-white text-[11px] font-semibold border border-red-500/40 transition">
+              Load Valid Sketch
+            </button>
+          </div>
+        </div>
+
+        <!-- Line-Numbered Editor Area -->
+        <div class="relative flex h-[285px] sm:h-[310px] bg-slate-950">
+          <div id="lineNumbers" class="w-9 py-2.5 px-1.5 text-right select-none bg-slate-900/60 border-r border-slate-800/80 text-[11px] leading-[1.45rem] text-slate-500 code-font overflow-hidden">
+          </div>
+          <textarea
+            id="codeEditor"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            aria-label="Arduino FastLED Sketch Code Editor"
+            class="flex-1 p-2.5 bg-transparent text-slate-100 text-xs leading-[1.45rem] code-font focus:outline-none resize-none overflow-auto"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Scanned Hardware Specifications & Diagnostics Card -->
+      <div class="rounded-xl bg-slate-900/75 border border-slate-800/90 flex flex-col overflow-hidden shadow-lg">
+        <div class="px-3 py-2 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-1">
+            <button id="tabBtnSpecs" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+              Scanned Hardware Specs
+            </button>
+            <button id="tabBtnWiring" type="button" class="px-3 py-1.5 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+              Pinout &amp; Power Guide
+            </button>
+            <button id="tabBtnSerial" type="button" class="px-3 py-1.5 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent">
+              Serial &amp; Transpiler
+            </button>
+          </div>
+          <button id="copySpecsBtn" type="button" class="px-2 py-1 rounded text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            Copy JSON
+          </button>
+        </div>
+
+        <!-- Tab 1: Scanned Hardware Specs -->
+        <div id="tabPaneSpecs" class="p-3 space-y-2.5">
+          <div id="specsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+          <div class="pt-1">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">Source Code Line Trace</div>
+            <div id="findingsList" class="space-y-1 max-h-[155px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Physical Pinout & Power Guide -->
+        <div id="tabPaneWiring" class="hidden p-3">
+          <div id="wiringDiagramBox"></div>
+        </div>
+
+        <!-- Tab 3: Serial Monitor & Transpiled JS Preview -->
+        <div id="tabPaneSerial" class="hidden p-3 space-y-2.5">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Simulated Serial Monitor Output</span>
+              <button id="clearSerialBtn" type="button" class="text-[11px] text-slate-400 hover:text-slate-200">Clear</button>
+            </div>
+            <pre id="serialOutputBox" class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-emerald-300 code-font h-[84px] overflow-y-auto whitespace-pre-wrap"></pre>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Transpiled Sandbox Execution Code</div>
+            <pre id="transpiledPreviewBox" class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300 code-font h-[110px] overflow-y-auto whitespace-pre"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Physical LED Strip / Matrix Workbench & Optical Telemetry (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-3">
+      <div class="rounded-xl bg-slate-900/75 border border-slate-800/90 flex flex-col overflow-hidden shadow-lg flex-1">
+        <!-- Workbench Primary Control Bar -->
+        <div class="px-3 py-2 bg-slate-900/95 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button id="playPauseBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition">
+              <svg id="playPauseIcon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"></svg>
+              <span id="playPauseLabel">Pause</span>
+            </button>
+
+            <button id="stepFrameBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Step 1 loop() frame while paused">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19"></line>
+              </svg>
+              <span>Step</span>
+            </button>
+
+            <button id="resetSimBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Reset millis() and re-run setup()">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+              <span>Reset</span>
+            </button>
+
+            <button id="skipTimeBtn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-500/40 transition" title="Fast-forward simulated clock by +15 seconds to test pattern transitions">
+              <span>+15s</span>
+            </button>
+
+            <select id="speedSelect" aria-label="Simulation Speed" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5">
+              <option value="0.25">0.25× Slow-Mo</option>
+              <option value="0.5">0.5× Half Speed</option>
+              <option value="1" selected>1.0× Real-Time</option>
+              <option value="2">2.0× Fast Forward</option>
+              <option value="5">5.0× Turbo</option>
+              <option value="10">10.0× Hyper</option>
+            </select>
+          </div>
+
+          <!-- Form Factor / Topology Selector -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <label for="topologySelect" class="text-[11px] text-slate-400">Form Factor:</label>
+            <select id="topologySelect" aria-label="Hardware Form Factor" class="bg-slate-800 border border-slate-700 text-cyan-300 font-medium text-xs rounded-lg px-2.5 py-1.5">
+              <option value="auto">Auto (From Code)</option>
+              <option value="custom_map">2D Coordinate Map (MAP[x,y])</option>
+              <option value="1d_strip">1D Linear Strip</option>
+              <option value="2d_matrix">2D Matrix Panel</option>
+              <option value="ring">Circular LED Ring</option>
+              <option value="arch">Perimeter / Ambilight Arch</option>
+            </select>
+
+            <select id="stripWrapSelect" aria-label="1D Strip Layout Mode" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5">
+              <option value="wrap" selected>Workbench Serpentine Wrap</option>
+              <option value="linear">Single Straight Strip</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Secondary Optical & Matrix Configuration Bar -->
+        <div class="px-3 py-2 bg-slate-950/80 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Matrix Dimensions Bar (shown when 2D matrix is active) -->
+            <div id="matrixConfigBar" class="hidden flex items-center gap-1.5 pr-2 border-r border-slate-800">
+              <span class="text-[11px] text-slate-400">Matrix:</span>
+              <input id="matrixWInput" type="number" min="2" max="64" value="16" aria-label="Matrix Width" class="w-12 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-center code-font text-xs text-slate-100" />
+              <span class="text-slate-500">×</span>
+              <input id="matrixHInput" type="number" min="2" max="64" value="16" aria-label="Matrix Height" class="w-12 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-center code-font text-xs text-slate-100" />
+              <select id="matrixWiringSelect" aria-label="Matrix Physical Wiring" class="bg-slate-900 border border-slate-700 text-slate-200 text-[11px] rounded px-1.5 py-0.5">
+                <option value="auto">Wiring: Auto</option>
+                <option value="serpentine">Serpentine (Zig-Zag)</option>
+                <option value="progressive">Progressive (Row-Major)</option>
+              </select>
+            </div>
+
+            <!-- PCB & Diffuser Controls -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400">PCB:</span>
+              <select id="pcbSelect" aria-label="PCB Color" class="bg-slate-900 border border-slate-700 text-slate-200 text-[11px] rounded px-2 py-1">
+                <option value="black" selected>Black PCB</option>
+                <option value="white">White PCB</option>
+                <option value="copper">Kapton / Copper</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400">Optics:</span>
+              <select id="diffuserSelect" aria-label="Optical Diffuser" class="bg-slate-900 border border-slate-700 text-slate-200 text-[11px] rounded px-2 py-1">
+                <option value="raw" selected>Raw SMD 5050</option>
+                <option value="silicone">Silicone Neon Tube</option>
+                <option value="baffle">Matrix Grid Baffle</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400">Bloom:</span>
+              <input id="bloomSlider" type="range" min="0" max="100" value="75" aria-label="Optical Bloom Intensity" class="w-16 accent-cyan-400 cursor-pointer" />
+              <span id="bloomValueLabel" class="text-[11px] text-slate-300 code-font w-8">75%</span>
+            </div>
+          </div>
+
+          <!-- View Toggles & Zoom -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button id="toggleWiringBtn" type="button" class="px-2 py-1 rounded text-[11px] font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition">
+              Wiring
+            </button>
+            <button id="toggleIndicesBtn" type="button" class="px-2 py-1 rounded text-[11px] font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 transition">
+              # Indices
+            </button>
+            <button id="toggleAmbientBtn" type="button" class="px-2 py-1 rounded text-[11px] font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition">
+              🌙 Dark Lab
+            </button>
+
+            <div class="inline-flex rounded border border-slate-700 overflow-hidden bg-slate-900">
+              <button id="zoomOutBtn" type="button" class="px-2 py-0.5 text-slate-300 hover:bg-slate-800" title="Zoom Out">−</button>
+              <button id="zoomResetBtn" type="button" class="px-2 py-0.5 text-[10px] text-slate-300 hover:bg-slate-800 border-x border-slate-700 code-font" title="Reset Zoom">100%</button>
+              <button id="zoomInBtn" type="button" class="px-2 py-0.5 text-slate-300 hover:bg-slate-800" title="Zoom In">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Physical Hardware Viewport Canvas -->
+        <div id="canvasContainer" class="relative flex-1 min-h-[300px] sm:min-h-[350px] overflow-hidden select-none workbench-grid-bg">
+          <canvas id="ledViewport" class="w-full h-full block cursor-grab"></canvas>
+        </div>
+
+        <!-- Spatial RGB Channel Waveform Strip -->
+        <div class="px-3 py-1.5 bg-slate-950 border-t border-slate-800/80 flex items-center gap-3">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold shrink-0">
+            Strip RGB Waveform
+          </div>
+          <div class="flex-1 h-9 rounded overflow-hidden border border-slate-800/90">
+            <canvas id="waveformCanvas" class="w-full h-full block"></canvas>
+          </div>
+        </div>
+
+        <!-- Bottom Live Electrical Telemetry & Pixel Probe Bar -->
+        <div class="p-3 bg-slate-900/95 border-t border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          <!-- Electrical & Timing Readouts (7 cols) -->
+          <div class="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="p-2 rounded-lg bg-slate-950/90 border border-slate-800/90">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase text-slate-400 font-semibold">Current Draw</span>
+              </div>
+              <div id="telemetryCurrent" class="text-xs sm:text-sm font-bold text-amber-300 code-font mt-0.5">0 mA</div>
+              <div class="flex items-center justify-between mt-0.5 text-[10px] text-slate-400">
+                <span id="telemetryWatts">0.00 W</span>
+                <span>Peak: <strong id="telemetryPeak" class="text-slate-300">0 mA</strong></span>
+              </div>
+            </div>
+
+            <div class="p-2 rounded-lg bg-slate-950/90 border border-slate-800/90">
+              <span class="text-[10px] uppercase text-slate-400 font-semibold">Power Supply</span>
+              <div class="mt-1">
+                <span id="telemetryPsuBadge" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/90 border border-emerald-500/40 text-emerald-300">
+                  USB 500mA Safe
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">5V Addressable Rail</div>
+            </div>
+
+            <div class="p-2 rounded-lg bg-slate-950/90 border border-slate-800/90">
+              <span class="text-[10px] uppercase text-slate-400 font-semibold">Sim Clock</span>
+              <div id="telemetryMillis" class="text-xs sm:text-sm font-bold text-cyan-300 code-font mt-0.5">0 ms</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                Frame #<span id="telemetryFrame" class="code-font text-slate-300">0</span> • <span id="telemetryFps" class="text-emerald-400">60 FPS</span>
+              </div>
+            </div>
+
+            <div class="p-2 rounded-lg bg-slate-950/90 border border-slate-800/90">
+              <span class="text-[10px] uppercase text-slate-400 font-semibold">Master Brightness</span>
+              <div id="telemetryBrightness" class="text-xs sm:text-sm font-bold text-purple-300 code-font mt-0.5">180 / 255</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">FastLED.getBrightness()</div>
+            </div>
+          </div>
+
+          <!-- Interactive Pixel Inspector Card (5 cols) -->
+          <div id="pixelProbeCard" class="md:col-span-5 p-2.5 rounded-lg bg-slate-950/95 border border-slate-800 flex items-center gap-3">
+            <div id="probeSwatch" class="w-10 h-10 rounded-lg border border-slate-700 shrink-0 transition-colors" style="background-color: #1e293b;"></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-1">
+                <span id="probeTitle" class="text-xs font-semibold text-slate-200 truncate">Hover or click any LED to inspect</span>
+                <button id="unlockProbeBtn" type="button" class="hidden text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 shrink-0">
+                  Unlock
+                </button>
+              </div>
+              <div class="flex items-center gap-2 text-[11px] code-font text-cyan-300 mt-0.5 truncate">
+                <span id="probeRgbText">CRGB(0, 0, 0)</span>
+                <span class="text-slate-600">•</span>
+                <span id="probeHexText" class="text-slate-300">#000000</span>
+                <span class="text-slate-600">•</span>
+                <span id="probeCurrentText" class="text-amber-300">1.0 mA</span>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-slate-400 mt-0.5 truncate">
+                <span id="probeCoordText">—</span>
+                <span id="probeWireOrderText" class="code-font text-slate-400">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Non-blocking Toast Notification -->
+  <div id="toastBox" class="fixed bottom-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-xl text-xs font-medium opacity-0 pointer-events-none transition-all duration-200"></div>
+
+  <script src="src/presets.js"></script>
+  <script src="src/parser.js"></script>
+  <script src="src/runtime.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

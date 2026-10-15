@@ -1,0 +1,24 @@
+{
+  "name": "fastledvis",
+  "version": "1.0.0",
+  "description": "Zero-Wiring Arduino FastLED Sketch Scanner & Optical Hardware Visualizer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Spaceulizer/FastLedVis.git"
+  },
+  "scripts": {
+    "test": "node test.js",
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "fastled",
+    "arduino",
+    "ws2812b",
+    "neopixel",
+    "led-strip",
+    "led-matrix",
+    "visualizer",
+    "simulator"
+  ],
+  "license": "MIT"
+}
